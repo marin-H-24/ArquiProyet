@@ -15,12 +15,30 @@ import com.marin.arquiproyet.ui.components.LampCanvas
 import com.marin.arquiproyet.ui.components.ProjectCard
 import com.marin.arquiproyet.ui.theme.ColorBeige
 import com.marin.arquiproyet.ui.theme.ColorDeepTeal
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.clickable
+import com.marin.arquiproyet.ui.components.CreateProjectDialog
 
 @Composable
 fun MainScreen(
     onNavigateToDetail: () -> Unit,
-    onOpenNewProject: () -> Unit
+    onOpenNewProject: () -> Unit // Lo mantendremos para navegar si hace falta
 ) {
+    var showCreateDialog by remember { mutableStateOf(false) }
+
+    if (showCreateDialog) {
+        CreateProjectDialog(
+            onDismiss = { showCreateDialog = false },
+            onCreate = { name, category ->
+                // Aquí en el futuro guardaremos el proyecto en la base de datos
+                showCreateDialog = false
+                onNavigateToDetail() // Asumimos que al crearlo te lleva a los apartados
+            }
+        )
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,7 +76,11 @@ fun MainScreen(
             // Columna Derecha: Widgets
             Column(modifier = Modifier.weight(1f)) {
                 // Nuevo Proyecto (Bombillo)
-                GlassCard(modifier = Modifier.fillMaxWidth().weight(1.5f)) {
+                GlassCard(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1.5f)
+                    .clickable { showCreateDialog = true }
+                ) {
                     Column(
                         modifier = Modifier.fillMaxSize().padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
