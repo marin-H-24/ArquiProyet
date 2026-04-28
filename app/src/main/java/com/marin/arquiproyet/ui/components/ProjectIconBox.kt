@@ -17,8 +17,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.marin.arquiproyet.ui.theme.ColorBeige
+import com.marin.arquiproyet.ui.theme.GlacierWhite
 
 @Composable
 fun ProjectIconBox(
@@ -26,14 +28,19 @@ fun ProjectIconBox(
     selectedImageUri: Uri?,
     onImageSelected: (Uri) -> Unit
 ) {
+    // Lanzador para abrir la galería del teléfono
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { onImageSelected(it) }
     }
 
+    // Estado para la animación de presión
     var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.92f else 1f, label = "scale_anim")
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1f,
+        label = "scale_anim"
+    )
 
     GlassCard(
         modifier = modifier
@@ -48,21 +55,31 @@ fun ProjectIconBox(
                     val up = waitForUpOrCancellation()
                     isPressed = false
                     if (up != null) {
+                        // Si se soltó el dedo dentro del área, abre la galería
                         launcher.launch("image/*")
                     }
                 }
-            }
+            },
+        cornerRadius = 24.dp
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             if (selectedImageUri != null) {
                 AsyncImage(
                     model = selectedImageUri,
-                    contentDescription = null,
+                    contentDescription = "Icono del Proyecto",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Text(text = "Icono", color = ColorBeige, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "ICONO",
+                    color = GlacierWhite.copy(alpha = 0.8f),
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 2.sp
+                )
             }
         }
     }

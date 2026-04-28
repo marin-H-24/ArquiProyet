@@ -2,9 +2,8 @@ package com.marin.arquiproyet.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val ColorDeepTeal = Color(0xFF0F2C33)
-val ColorMediumTeal = Color(0xFF21616A)
-val ColorLightTeal = Color(0xFF2E9CA0)
-val ColorAccentYellow = Color(0xFFEFA00F)
-val ColorPlum = Color(0xFF533946)
-val ColorBeige = Color(0xFFE6D1B4)
+val DeepObsidian = Color(0xFF070B0D)
+val DarkTeal = Color(0xFF0A2226)
+val NeonGold = Color(0xFFFFD700)
+val Emerald = Color(0xFF00E676)
+val GlacierWhite = Color(0xFFF0F8FF)

@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,44 +13,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.marin.arquiproyet.ui.components.ApartadoActionDialog
-import com.marin.arquiproyet.ui.components.GlassCard
-import com.marin.arquiproyet.ui.components.NewApartadoDialog
-import com.marin.arquiproyet.ui.theme.ColorBeige
-import com.marin.arquiproyet.ui.theme.ColorDeepTeal
-import android.net.Uri // Asegúrate de importar esto
-import com.marin.arquiproyet.ui.components.NotesAndIdeasDialog
-import com.marin.arquiproyet.ui.components.ProjectIconBox
+import com.marin.arquiproyet.ui.components.*
+import com.marin.arquiproyet.ui.theme.DeepObsidian
+import com.marin.arquiproyet.ui.theme.GlacierWhite
+import com.marin.arquiproyet.ui.theme.NeonGold
+import com.marin.arquiproyet.ui.viewmodel.MainViewModel
 
 @Composable
 fun DetailScreen(
     projectName: String,
+    viewModel: MainViewModel, // Recibe el cerebro de la app
     onBack: () -> Unit
 ) {
-    // ... tus otros estados ...
-    var projectIconUri by remember { mutableStateOf<Uri?>(null) }
-    // Estados para controlar las ventanas flotantes
-    var showNewApartado by remember { mutableStateOf(false) }
-    var selectedApartado by remember { mutableStateOf<String?>(null) }
+    // 1. Obtenemos el proyecto real de la memoria
+    val project = viewModel.projects.find { it.name == projectName }
 
-    // Lista de apartados (Dashboard siempre debe estar por defecto según tus reglas)
-    var apartados by remember {
-        mutableStateOf(listOf("Dashboard", "ENTRADA", "ESTADISTIC", "PRINCIPAL", "CARACTERIS"))
+    // Si por alguna razón no encuentra el proyecto, regresa a la pantalla anterior
+    if (project == null) {
+        onBack()
+        return
     }
-    // Estados para Notas e Ideas
+
+    // 2. Estados para mostrar los diálogos
+    var showNewApartado by remember { mutableStateOf(false) }
+    var selectedApartadoName by remember { mutableStateOf<String?>(null) }
     var showNotas by remember { mutableStateOf(false) }
     var showIdeasFut by remember { mutableStateOf(false) }
 
-    // Listas temporales en memoria
-    var notasList by remember { mutableStateOf(listOf<String>()) }
-    var ideasFutList by remember { mutableStateOf(listOf<String>()) }
+    // --- DIÁLOGOS CONECTADOS AL VIEWMODEL ---
 
-    // 1. Diálogo para crear un Nuevo Apartado
     if (showNewApartado) {
         NewApartadoDialog(
             onDismiss = { showNewApartado = false },
-            onAdd = { newName ->
-                apartados = apartados + newName
+            onAdd = { nuevoApartado ->
+                viewModel.addApartado(projectName, nuevoApartado)
                 showNewApartado = false
             }
         )
@@ -58,157 +55,150 @@ fun DetailScreen(
     if (showNotas) {
         NotesAndIdeasDialog(
             title = "NOTAS",
-            itemsList = notasList,
+            itemsList = project.notas,
             onDismiss = { showNotas = false },
-            onAddItem = { nuevaNota -> notasList = notasList + nuevaNota }
+            onAddItem = { nuevaNota ->
+                viewModel.addNotaToProject(projectName, nuevaNota)
+            }
         )
     }
 
     if (showIdeasFut) {
         NotesAndIdeasDialog(
             title = "IDEAS FUTURAS",
-            itemsList = ideasFutList,
+            itemsList = project.ideasFuturas,
             onDismiss = { showIdeasFut = false },
-            onAddItem = { nuevaIdea -> ideasFutList = ideasFutList + nuevaIdea }
-        )
-    }
-
-    // 2. Diálogo para Ver/Editar/Copiar un Apartado existente
-    selectedApartado?.let { apartado ->
-        ApartadoActionDialog(
-            apartadoName = apartado,
-            initialContent = "", // Aquí conectaremos la Base de Datos en el futuro
-            onDismiss = { selectedApartado = null },
-            onSave = { newContent ->
-                // Lógica de guardado en Base de Datos irá aquí
-                selectedApartado = null
+            onAddItem = { nuevaIdea ->
+                viewModel.addIdeaFuturaToProject(projectName, nuevaIdea)
             }
         )
     }
 
-    // --- ESTRUCTURA VISUAL PRINCIPAL ---
+    // Diálogo para leer y guardar dentro de un apartado
+    selectedApartadoName?.let { name ->
+        ApartadoActionDialog(
+            apartadoName = name,
+            initialContent = project.apartados[name] ?: "",
+            onDismiss = { selectedApartadoName = null },
+            onSave = { newContent ->
+                viewModel.updateApartadoContent(projectName, name, newContent)
+                selectedApartadoName = null
+            }
+        )
+    }
+
+    // --- INTERFAZ VISUAL ---
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ColorDeepTeal)
-            .padding(16.dp)
+            .background(DeepObsidian)
+            .padding(20.dp)
     ) {
-        // CABECERA: Icono + Botones (NUEVO AP, NOTAS, IDEAS FUT)
+        // Título
+        Text(
+            text = projectName.uppercase(),
+            color = NeonGold,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier.padding(bottom = 20.dp),
+            letterSpacing = 1.sp
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Objeto: Icono del Proyecto
+            // Icono del proyecto persistente
             ProjectIconBox(
-                modifier = Modifier
-                    .weight(1f)
-                    .aspectRatio(1f),
-                selectedImageUri = projectIconUri,
-                onImageSelected = { uri -> projectIconUri = uri }
+                modifier = Modifier.weight(1f).aspectRatio(1f),
+                selectedImageUri = project.iconUriString?.let { android.net.Uri.parse(it) },
+                onImageSelected = { uri ->
+                    viewModel.updateProjectIcon(projectName, uri.toString())
+                }
             )
 
-            // Objeto: Columna de Botones
+            // Botones de acción
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Botón NUEVO AP
-                GlassCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .clickable { showNewApartado = true } // <-- Abre el diálogo
-                ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "NUEVO AP", color = ColorBeige, fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                // Botón NOTAS
-                GlassCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .clickable { showNotas = true }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "NOTAS", color = ColorBeige, fontWeight = FontWeight.Bold)
-                        Text(text = "+", color = ColorBeige, fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                // Botón IDEAS FUT
-                GlassCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .clickable { showIdeasFut = true }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "IDEAS FUT", color = ColorBeige, fontWeight = FontWeight.Bold)
-                        Text(text = "+", color = ColorBeige, fontWeight = FontWeight.Bold)
-                    }
-                }
+                DetailActionButton(text = "NUEVO AP") { showNewApartado = true }
+                DetailActionButton(text = "NOTAS", showPlus = true) { showNotas = true }
+                DetailActionButton(text = "IDEAS FUT", showPlus = true) { showIdeasFut = true }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // TÍTULO: APARTADOS
         Text(
             text = "APARTADOS",
-            color = ColorBeige,
-            fontSize = 18.sp,
+            color = GlacierWhite.copy(alpha = 0.6f),
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // CUADRÍCULA DE APARTADOS (2 Columnas)
+        // Cuadrícula de Apartados (lee directamente desde el proyecto guardado)
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(apartados.size) { index ->
+            items(project.apartados.keys.toList()) { apartadoName ->
                 GlassCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(60.dp)
-                        .clickable { selectedApartado = apartados[index] } // <-- Abre el diálogo de edición/ver
+                        .height(80.dp)
+                        .clickable { selectedApartadoName = apartadoName },
+                    cornerRadius = 16.dp
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(8.dp),
+                            .padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
                             text = "APARTADO",
-                            color = ColorBeige.copy(alpha = 0.7f),
-                            fontSize = 10.sp
+                            color = NeonGold.copy(alpha = 0.5f),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = apartados[index],
-                            color = ColorBeige,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
+                            text = apartadoName,
+                            color = GlacierWhite,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 15.sp
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+// Componente reutilizable para los botones de la pantalla de detalle
+@Composable
+fun DetailActionButton(text: String, showPlus: Boolean = false, onClick: () -> Unit) {
+    GlassCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(45.dp)
+            .clickable { onClick() },
+        cornerRadius = 12.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = if (showPlus) Arrangement.SpaceBetween else Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text, color = GlacierWhite, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            if (showPlus) {
+                Text("+", color = NeonGold, fontWeight = FontWeight.Black, fontSize = 18.sp)
             }
         }
     }

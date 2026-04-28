@@ -6,14 +6,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.marin.arquiproyet.ui.theme.ColorBeige
-import com.marin.arquiproyet.ui.theme.ColorDeepTeal
-import com.marin.arquiproyet.ui.theme.ColorLightTeal
+import com.marin.arquiproyet.ui.theme.DeepObsidian
+import com.marin.arquiproyet.ui.theme.GlacierWhite
+import com.marin.arquiproyet.ui.theme.NeonGold
 
 @Composable
 fun NewApartadoDialog(
@@ -33,9 +32,10 @@ fun NewApartadoDialog(
             ) {
                 Text(
                     text = "NUEVO APARTADO",
-                    color = ColorBeige,
+                    color = NeonGold,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -43,13 +43,15 @@ fun NewApartadoDialog(
                 OutlinedTextField(
                     value = apartadoName,
                     onValueChange = { apartadoName = it },
-                    label = { Text("Nombre del apartado", color = ColorBeige.copy(alpha = 0.7f)) },
+                    label = { Text("Nombre del apartado", color = GlacierWhite.copy(alpha = 0.7f)) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = ColorLightTeal,
-                        unfocusedBorderColor = ColorBeige.copy(alpha = 0.5f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        cursorColor = ColorLightTeal
+                        focusedBorderColor = NeonGold,
+                        unfocusedBorderColor = GlacierWhite.copy(alpha = 0.3f),
+                        focusedTextColor = GlacierWhite,
+                        unfocusedTextColor = GlacierWhite,
+                        cursorColor = NeonGold,
+                        focusedLabelColor = NeonGold,
+                        unfocusedLabelColor = GlacierWhite.copy(alpha = 0.5f)
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -62,15 +64,15 @@ fun NewApartadoDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancelar", color = ColorBeige.copy(alpha = 0.7f))
+                        Text("Cancelar", color = GlacierWhite.copy(alpha = 0.7f))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = { if (apartadoName.isNotBlank()) onAdd(apartadoName) },
-                        colors = ButtonDefaults.buttonColors(containerColor = ColorLightTeal),
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonGold),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Agregar", color = ColorDeepTeal, fontWeight = FontWeight.Bold)
+                        Text("Agregar", color = DeepObsidian, fontWeight = FontWeight.Bold)
                     }
                 }
             }

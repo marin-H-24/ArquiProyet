@@ -8,14 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.marin.arquiproyet.ui.theme.ColorBeige
-import com.marin.arquiproyet.ui.theme.ColorDeepTeal
-import com.marin.arquiproyet.ui.theme.ColorLightTeal
+import com.marin.arquiproyet.ui.theme.DeepObsidian
+import com.marin.arquiproyet.ui.theme.GlacierWhite
+import com.marin.arquiproyet.ui.theme.NeonGold
 
 @Composable
 fun NotesAndIdeasDialog(
@@ -28,55 +27,68 @@ fun NotesAndIdeasDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         GlassCard(
-            modifier = Modifier.fillMaxWidth().height(500.dp).padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(500.dp)
+                .padding(16.dp),
             cornerRadius = 24.dp
         ) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(24.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
             ) {
                 Text(
-                    text = title,
-                    color = ColorBeige,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = title.uppercase(),
+                    color = NeonGold,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 LazyColumn(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(itemsList) { item ->
-                        GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 8.dp) {
+                        GlassCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            cornerRadius = 12.dp
+                        ) {
                             Text(
                                 text = item,
-                                color = ColorBeige,
-                                modifier = Modifier.padding(12.dp),
-                                fontSize = 14.sp
+                                color = GlacierWhite,
+                                modifier = Modifier.padding(16.dp),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedTextField(
                         value = newItemText,
                         onValueChange = { newItemText = it },
-                        placeholder = { Text("Escribe aquí...", color = ColorBeige.copy(alpha = 0.5f)) },
+                        placeholder = { Text("Escribe aquí...", color = GlacierWhite.copy(alpha = 0.5f)) },
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = ColorLightTeal,
-                            unfocusedBorderColor = ColorBeige.copy(alpha = 0.5f),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedBorderColor = NeonGold,
+                            unfocusedBorderColor = GlacierWhite.copy(alpha = 0.3f),
+                            focusedTextColor = GlacierWhite,
+                            unfocusedTextColor = GlacierWhite,
+                            cursorColor = NeonGold
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -88,12 +100,17 @@ fun NotesAndIdeasDialog(
                                 newItemText = ""
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = ColorLightTeal),
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonGold),
                         shape = RoundedCornerShape(12.dp),
                         contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(52.dp)
                     ) {
-                        Text("+", color = ColorDeepTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text(
+                            text = "+",
+                            color = DeepObsidian,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 24.sp
+                        )
                     }
                 }
             }
